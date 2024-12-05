@@ -1,16 +1,26 @@
 import numpy as np
 import pandas as pd
-from enum import IntEnum
+from enum import StrEnum, IntEnum
+from collections import defaultdict
 
+class info(StrEnum):
+    ID = 'Customer ID'
+    AGE = 'Age'
+    SEX = 'Gender'
+    TYPE = 'Product Type'
+    PRICE = 'Unit Price'
+    TOTAL = 'Total Price'
+    QUANTITY = 'Quantity'
 
-class info(IntEnum):
+class ind(IntEnum):
     ID = 0
     AGE = 1
     SEX = 2
     TYPE = 3
-    TOTAL = 4
-    PRICE = 5
+    PRICE = 4
+    TOTAL = 5
     QUANTITY = 6
+
 
 
 TARGET_COLUMNS = [
@@ -18,7 +28,7 @@ TARGET_COLUMNS = [
     "Age",
     "Gender",
     "Product Type",
+    'Unit Price',
     'Total Price',
-    "Unit Price",
     "Quantity",
 ]
