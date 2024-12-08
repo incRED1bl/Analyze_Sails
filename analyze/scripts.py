@@ -25,9 +25,9 @@ class Observe:
             min_arg, max_arg = kwargs
             df = self.df[self.df[info.QUANTITY].between(min_arg, max_arg)]
             self.df = df
-        elif pos_arg == 'Price':
+        elif pos_arg == 'TOTAL':
             min_arg, max_arg = kwargs
-            df = self.df[self.df[info.PRICE].between(min_arg, max_arg)]
+            df = self.df[self.df[info.TOTAL].between(min_arg, max_arg)]
             self.df = df
         elif pos_arg == 'TYPE':
             el = kwargs[0]
@@ -40,18 +40,27 @@ class Observe:
         else:
             raise ValueError(f"Unknown argument: {pos_arg}")
 
-    # @property
-    # def group_by(self):
-    #     self.df = self.df.groupby(info.SEX).sum()
     @property
     def add_column(self):
-        d = {}
-        for _, row in self.df.iterrows():
-            if row[info.ID] in d:
-                d[row[info.ID]] += row[info.TOTAL]
+        d1 = {}
+        self.df['Collection'] = np.nan
+        for i, row in self.df.iterrows():
+            total_purchase = row[info.PRICE] * row[info.QUANTITY]
+            if row[info.ID] in d1:
+                d1[row[info.ID]] += total_purchase
             else:
-                d[row[info.ID]] = row[info.TOTAL]
-        self.df['all_purchases'] = self.df[info.ID].map(d)
+                d1[row[info.ID]] = total_purchase
+            if row[info.PAYMENT_METHOD] == 'Cash':
+                a = 'Cash'
+            elif row[info.PAYMENT_METHOD] in ['Credit Card', 'Debit Card']:
+                a = 'Card'
+            else:
+                a = 'Transaction'
+            self.df.at[i, info.MONEY] = a
+            if row[info.PAYMENT_METHOD] == 'Paypal':
+                self.df.at[i, info.PAYMENT_METHOD] = 'PayPal'
+        self.df['Combined Purchases'] = self.df[info.ID].map(d1)
+
 
 
 
@@ -59,7 +68,7 @@ class Observe:
     def client(cls, filters):
         ob = cls('dataset.csv', TARGET_COLUMNS)
         ob.create
+        ob.add_column
         for filter_type, *args in filters:
             ob.filter(filter_type, *args)
-        ob.add_column
         return ob.df
